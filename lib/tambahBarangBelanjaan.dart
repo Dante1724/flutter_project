@@ -2,12 +2,14 @@ import 'dart:ui';
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
-
+// import 'package:image/image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tugas_akhir/helpers/databaseHelper.dart';
 import 'package:tugas_akhir/main.dart';
+
+final dbHelper = DatabaseHelper.instance;
 
 class TambahBarangBelanjaan extends StatefulWidget {
   @override
@@ -15,21 +17,18 @@ class TambahBarangBelanjaan extends StatefulWidget {
 }
 
 class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
-  File imgCamera;
-  File imgGallery;
+  File foto;
   final formKeyNamaBarang = GlobalKey<FormState>();
   final formKeyJumlahBarang = GlobalKey<FormState>();
   String namaBarang;
   String jumlah;
-  int selesai = 0;
-  int id = 1;
+  int status = 0;
 
-  openCamera(){
+  openCamera() async{
+    foto = await ImagePicker.pickImage(source: ImageSource.camera, maxHeight: 144, maxWidth: 144);
+    setState(() {
 
-  }
-
-  openGallery(){
-
+    });
   }
 
   @override
@@ -110,23 +109,19 @@ class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
             ],
           ),),
 
-          // ListView(
-          //   children: <Widget>[
-          //     Text('Camera'),
-          //     RaisedButton(
-          //       child: Text('Take a photo with camera'),
-          //       onPressed: openCamera,
-          //     ),
-          //
-          //     // imgCamera = null ? Text('Gambar not found') : Image.file(imgCamera),
-          //
-          //     Text('Tampilan Barang'),
-          //     RaisedButton(
-          //       child: Text('Ambil gambar dari galeri'),
-          //       onPressed: null,),
-          //     // imgGallery == null ? Text('Gambar not found') : Image.Image.file(imgGallery),
-          //   ],
-          // ),
+          Row(
+            children: <Widget>[
+              RaisedButton(
+                child: Text('Take a photo with camera'),
+                onPressed: openCamera,
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              foto == null ? Text('Gambar not found') : Image.file(foto),
+          ],
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -142,16 +137,11 @@ class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
     );
   }
   void submit(){
-    setState(() async{
+    setState((){
       if(formKeyNamaBarang.currentState.validate() && formKeyJumlahBarang.currentState.validate()){
         formKeyNamaBarang.currentState.save();
         formKeyJumlahBarang.currentState.save();
-        id = await DatabaseHelper.instance.insert({
-          DatabaseHelper.columnNama : namaBarang,
-          DatabaseHelper.columnJumlah : jumlah,
-          DatabaseHelper.columnSelesai : selesai,
-          DatabaseHelper.columnFoto : imgCamera,
-        });
+        _insert();
         print("Form Validation : " + formKeyJumlahBarang.currentState.validate().toString());
         print(namaBarang);
         print(jumlah);
@@ -160,6 +150,17 @@ class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
         print("Form Validation : " + formKeyJumlahBarang.currentState.validate().toString());
       }
     });
+  }
+
+  void _insert() async {
+    Map<String, dynamic> row = {
+      DatabaseHelper.columnNama : namaBarang,
+      DatabaseHelper.columnJumlah : jumlah,
+      DatabaseHelper.columnStatus : status,
+      DatabaseHelper.columnFoto : foto,
+    };
+    final id = await dbHelper.insert(row);
+    print('row yang dimasukkan id: $id');
   }
 }
 
