@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tugas_akhir/helpers/databaseHelper.dart';
 import 'package:tugas_akhir/main.dart';
 
 class TambahBarangBelanjaan extends StatefulWidget {
@@ -20,6 +21,8 @@ class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
   final formKeyJumlahBarang = GlobalKey<FormState>();
   String namaBarang;
   String jumlah;
+  int selesai = 0;
+  int id = 1;
 
   openCamera(){
 
@@ -107,23 +110,23 @@ class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
             ],
           ),),
 
-          ListView(
-            children: <Widget>[
-              Text('Camera'),
-              RaisedButton(
-                child: Text('Take a photo with camera'),
-                onPressed: openCamera,
-              ),
-
-              // imgCamera = null ? Text('Gambar not found') : Image.file(imgCamera),
-              
-              Text('Tampilan Barang'),
-              RaisedButton(
-                child: Text('Ambil gambar dari galeri'),
-                onPressed: null,),
-              // imgGallery == null ? Text('Gambar not found') : Image.Image.file(imgGallery),
-            ],
-          ),
+          // ListView(
+          //   children: <Widget>[
+          //     Text('Camera'),
+          //     RaisedButton(
+          //       child: Text('Take a photo with camera'),
+          //       onPressed: openCamera,
+          //     ),
+          //
+          //     // imgCamera = null ? Text('Gambar not found') : Image.file(imgCamera),
+          //
+          //     Text('Tampilan Barang'),
+          //     RaisedButton(
+          //       child: Text('Ambil gambar dari galeri'),
+          //       onPressed: null,),
+          //     // imgGallery == null ? Text('Gambar not found') : Image.Image.file(imgGallery),
+          //   ],
+          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -139,10 +142,16 @@ class _TambahBarangBelanjaanState extends State<TambahBarangBelanjaan> {
     );
   }
   void submit(){
-    setState(() {
+    setState(() async{
       if(formKeyNamaBarang.currentState.validate() && formKeyJumlahBarang.currentState.validate()){
         formKeyNamaBarang.currentState.save();
         formKeyJumlahBarang.currentState.save();
+        id = await DatabaseHelper.instance.insert({
+          DatabaseHelper.columnNama : namaBarang,
+          DatabaseHelper.columnJumlah : jumlah,
+          DatabaseHelper.columnSelesai : selesai,
+          DatabaseHelper.columnFoto : imgCamera,
+        });
         print("Form Validation : " + formKeyJumlahBarang.currentState.validate().toString());
         print(namaBarang);
         print(jumlah);
